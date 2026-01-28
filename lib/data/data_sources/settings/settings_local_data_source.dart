@@ -15,7 +15,7 @@ class SettingsLocalDataSource {
   }
 
   Locale loadLocale() {
-    final code = box.get('language', defaultValue: 'en');
+    final code = box.get('language', defaultValue: 'ru');
     return Locale(code);
   }
 

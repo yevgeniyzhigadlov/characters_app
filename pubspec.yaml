@@ -1,0 +1,23 @@
+name: characters_app
+description: Rick and Morty Flutter app (BLoC, offline, favorites, theming, localization)
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+
+  flutter_bloc: ^9.1.1
+  equatable: ^2.0.8
+  dio: ^5.9.0
+  hive_flutter: ^1.1.0
+  cached_network_image: ^3.4.1
+
+flutter:
+  uses-material-design: true

@@ -8,7 +8,6 @@ part 'characters_state.dart';
 
 class CharactersBloc extends Bloc<CharactersEvent, CharactersState> {
   final CharactersRepository repository;
-  int page = 1;
 
   CharactersBloc(this.repository) : super(CharactersState.initial()) {
     on<LoadCharacters>(_load);
@@ -20,17 +19,23 @@ class CharactersBloc extends Bloc<CharactersEvent, CharactersState> {
       LoadCharacters event,
       Emitter<CharactersState> emit,
       ) async {
-    emit(state.copyWith(status: CharactersStatus.loading));
+    emit(state.copyWith(
+      status: CharactersStatus.loading,
+      page: 1,
+      hasReachedEnd: false,
+      isLoadingNext: false,
+    ));
 
     try {
-      page = 1;
-      final list = await repository.getCharacters(page);
+      final list = await repository.getCharacters(1);
 
       emit(state.copyWith(
         characters: list,
         status: CharactersStatus.loaded,
+        page: 1,
+        hasReachedEnd: list.isEmpty,
       ));
-    } catch (e) {
+    } catch (_) {
       emit(state.copyWith(status: CharactersStatus.error));
     }
   }
@@ -39,22 +44,40 @@ class CharactersBloc extends Bloc<CharactersEvent, CharactersState> {
       LoadNextPage event,
       Emitter<CharactersState> emit,
       ) async {
+    if (state.status != CharactersStatus.loaded) return;
+    if (state.isLoadingNext) return;
+    if (state.hasReachedEnd) return;
+
+    emit(state.copyWith(isLoadingNext: true));
+
     try {
-      page++;
-      final list = await repository.getCharacters(page);
+      final nextPage = state.page + 1;
+      final list = await repository.getCharacters(nextPage);
+
+      if (list.isEmpty) {
+        emit(state.copyWith(
+          isLoadingNext: false,
+          hasReachedEnd: true,
+        ));
+        return;
+      }
 
       emit(state.copyWith(
         characters: [...state.characters, ...list],
+        page: nextPage,
+        isLoadingNext: false,
         status: CharactersStatus.loaded,
       ));
-    } catch (_) {}
+    } catch (_) {
+      emit(state.copyWith(isLoadingNext: false));
+    }
   }
 
   Future<void> _refresh(
       RefreshCharacters event,
       Emitter<CharactersState> emit,
       ) async {
-    page = 1;
     add(LoadCharacters());
   }
 }
+
